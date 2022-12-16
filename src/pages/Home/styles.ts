@@ -82,7 +82,7 @@ export const MinutesAmountInput = styled(BaseInput)`
   width: 4rem;
 `
 
-export const StartCountDownButton = styled.button`
+const BaseButton = styled.button`
   width: 100%;
   border: 0;
   padding: 1rem;
@@ -97,8 +97,11 @@ export const StartCountDownButton = styled.button`
 
   cursor: pointer;
 
-  background-color: ${(props) => props.theme['green-500']};
   color: ${(props) => props.theme['gray-100']};
+`
+
+export const StartCountDownButton = styled(BaseButton)`
+  background-color: ${(props) => props.theme['green-500']};
 
   &:disabled {
     opacity: 0.7;
@@ -107,5 +110,13 @@ export const StartCountDownButton = styled.button`
 
   &:not(:disabled):hover {
     background-color: ${(props) => props.theme['green-700']};
+  }
+`
+
+export const InterruptCycleButton = styled(BaseButton)`
+  background-color: ${(props) => props.theme['red-500']};
+
+  &:not(:disabled):hover {
+    background-color: ${(props) => props.theme['red-700']};
   }
 `
