@@ -18,7 +18,7 @@ import {
 
 const newCycleFormValidationSchema = zod.object({
   task: zod.string().min(1, 'Informe a tarefa.'),
-  minutesAmount: zod.number().min(5).max(60),
+  minutesAmount: zod.number().min(1).max(60),
 })
 
 type NewCycleFormData = zod.infer<typeof newCycleFormValidationSchema>
@@ -29,6 +29,7 @@ interface Cycle {
   minutesAmount: number
   startCycle: Date
   interruptCycle?: Date
+  finishedCycle?: Date
 }
 
 export function Home() {
@@ -74,22 +75,41 @@ export function Home() {
   }
 
   const activeCycle = cycles.find((cycle) => cycle.id === activeCycleId)
+  const totalSeconds = activeCycle ? activeCycle.minutesAmount * 60 : 0
 
   useEffect(() => {
     let interval: number
 
     if (activeCycleId) {
       interval = setInterval(() => {
-        setAmountPassed(differenceInSeconds(new Date(), activeCycle.startCycle))
+        const secondsDifference = differenceInSeconds(
+          new Date(),
+          activeCycle.startCycle,
+        )
+        if (secondsDifference >= totalSeconds) {
+          setCycles(
+            cycles.map((cycle) => {
+              if (cycle.id === activeCycleId) {
+                return { ...cycle, finishedCycle: new Date() }
+              } else {
+                return cycle
+              }
+            }),
+          )
+
+          setActiveCycleId(null)
+          clearInterval(interval)
+        } else {
+          setAmountPassed(secondsDifference)
+        }
       }, 1000)
     }
 
     return () => {
       clearInterval(interval)
     }
-  }, [activeCycle, activeCycleId])
+  }, [activeCycle, activeCycleId, cycles, totalSeconds])
 
-  const totalSeconds = activeCycle ? activeCycle.minutesAmount * 60 : 0
   const currentSeconds = totalSeconds - amountPassed
 
   const minutes = activeCycle ? Math.floor(currentSeconds / 60) : 0
@@ -101,6 +121,8 @@ export function Home() {
   useEffect(() => {
     if (activeCycleId) {
       document.title = `${minutesString}:${secondsString}`
+    } else {
+      document.title = 'Pomodoro Timer'
     }
   }, [minutesString, secondsString, activeCycleId])
 
@@ -127,7 +149,7 @@ export function Home() {
           <MinutesAmountInput
             type="number"
             step={5}
-            min={5}
+            min={1}
             max={60}
             id="minutesAmount"
             placeholder="00"
