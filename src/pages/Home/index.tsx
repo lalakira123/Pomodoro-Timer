@@ -49,31 +49,44 @@ export function Home() {
       minutesAmount: data.minutesAmount,
       startCycle: new Date(),
     }
-    
+
     setCycles((state) => [...state, newCycle])
     setActiveCycleId(newCycle.id)
-    
+    setAmountPassed(0)
+
     reset()
   }
-  
+
   const activeCycle = cycles.find((cycle) => cycle.id === activeCycleId)
 
   useEffect(() => {
+    let interval: number
+
     if (activeCycleId) {
-      setInterval(() => {
+      interval = setInterval(() => {
         setAmountPassed(differenceInSeconds(new Date(), activeCycle.startCycle))
       }, 1000)
     }
-  }, [activeCycle])
+
+    return () => {
+      clearInterval(interval)
+    }
+  }, [activeCycle, activeCycleId])
 
   const totalSeconds = activeCycle ? activeCycle.minutesAmount * 60 : 0
-  const currentSeconds = totalSeconds - amountPassed;
+  const currentSeconds = totalSeconds - amountPassed
 
   const minutes = activeCycle ? Math.floor(currentSeconds / 60) : 0
   const seconds = activeCycle ? currentSeconds % 60 : 0
 
   const minutesString = String(minutes).padStart(2, '0')
   const secondsString = String(seconds).padStart(2, '0')
+
+  useEffect(() => {
+    if (activeCycleId) {
+      document.title = `${minutesString}:${secondsString}`
+    }
+  }, [minutesString, secondsString, activeCycleId])
 
   const task = watch('task')
   const isDisabledSubmit = !task
